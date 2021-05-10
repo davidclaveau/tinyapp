@@ -18,6 +18,11 @@ app.get('/urls', (req, res) => {
   res.render('urls_index', templateVars);
 });
 
+app.get("/urls/:shortURL", (req, res) => {
+  const templateVars = { shortURL: req.params.shortURL, longURL: 'http://www.lighthouselabs.ca' };
+  res.render("urls_show", templateVars);
+});
+
 app.get('/urls.json', (req, res) => {
   res.json(urlDatabase);
 });
