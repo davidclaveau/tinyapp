@@ -26,6 +26,11 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+app.post("/login", (req, res) => {
+  const cookie = res.cookie('name', req.body.username);
+  res.redirect("/urls");
+});
+
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
