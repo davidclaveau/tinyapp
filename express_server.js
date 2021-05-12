@@ -32,14 +32,13 @@ app.get("/", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const cookie = res.cookie('username', req.body.username);
-  // Cookies that have not been signed
-  console.log('Cookies: ', req.cookies)
-  // const cookie = res.cookie('name', req.body.username);
-  // console.log("cookie", cookie.name)
-  // const test2 = cookieParser.JSONCookies(cookie);
-  // // console.log("test", test);
-  // console.log("test2", test2);
+  res.cookie('username', req.body.username);
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  console.log(req.cookies["username"]);
+  res.clearCookie('username', req.cookies["username"])
   res.redirect("/urls");
 });
 
