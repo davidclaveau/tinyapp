@@ -29,6 +29,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 // HELPER FUNCTIONS
+
+// GENERATE RANDOM STRING
 const generateRandomString = (num) => {
   let returnValue = "";
   const randomCharacter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
@@ -37,6 +39,17 @@ const generateRandomString = (num) => {
   }
 
   return returnValue;
+};
+
+// FIND TRUE OR FALSE FOR EMAIL IN USERS OBJECT
+const findUserEmail = (userEmail) => {
+  const userIds = Object.keys(users);
+  for (const keys of userIds) {
+    if (userEmail === users[keys]["email"]) {
+      return false;
+    }
+  }
+  return true;
 };
 
 // GET HOMEPAGE
@@ -68,16 +81,18 @@ app.post("/registration", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
 
-  users[userID] = {
-    id: userID,
-    email: userEmail,
-    password: userPassword
-  };
-
-  res.cookie("user_id", userID);
-
-  console.log(users);
-  res.redirect("/urls");
+  if (userEmail !== "" && userPassword !== "" && findUserEmail(userEmail)) {
+    users[userID] = {
+      id: userID,
+      email: userEmail,
+      password: userPassword
+    };
+    res.cookie("user_id", userID);
+    res.redirect("/urls");
+    res.end();
+  } else {
+    res.sendStatus(400);
+  }
 });
 
 // REDIRECT SHORT URL TO LONGURL
@@ -106,7 +121,6 @@ app.post("/urls", (req, res) => {
 
 // SHOW TEMPLATE TO CREATE NEW URL
 app.get("/urls/new", (req, res) => {
-  console.log(req.cookies["user_id"]);
   const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
