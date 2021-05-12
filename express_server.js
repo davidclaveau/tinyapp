@@ -20,6 +20,11 @@ const users = {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
+  },
+  "user3RandomID": {
+    id: "user3RandomID",
+    email: "test@test.com",
+    password: "test"
   }
 };
 
@@ -43,8 +48,8 @@ const generateRandomString = (num) => {
 
 // FIND TRUE OR FALSE FOR EMAIL IN USERS OBJECT
 const findUserEmail = (userEmail) => {
-  const userIds = Object.keys(users);
-  for (const keys of userIds) {
+  const userIDsArr = Object.keys(users);
+  for (const keys of userIDsArr) {
     if (userEmail === users[keys]["email"]) {
       return false;
     }
@@ -58,8 +63,38 @@ app.get("/", (req, res) => {
 });
 
 // LOGIN
+app.get("/login", (req, res) => {
+  const templateVars = {
+    attempt: "correct",
+    user: users[req.cookies["user_id"]]
+  };
+  res.render("login", templateVars);
+});
+
+// LOGIN
 app.post("/login", (req, res) => {
-  res.cookie("user_id", req.body.user_id);
+  // res.cookie("user_id", req.body.user_id);
+  let userID = 0;
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+
+
+  const userIds = Object.keys(users);
+  for (const keys of userIds) {
+    if (userEmail === users[keys]["email"] && userPassword === users[keys]["password"]) {
+      userID = keys;
+    }
+  }
+
+  if (userID === 0) {
+    const templateVars = {
+      attempt: "incorrect",
+      user: users[req.cookies["user_id"]]
+    };
+    res.render("login", templateVars);
+  }
+ 
+  res.cookie("user_id", userID);
   res.redirect("/urls");
 });
 
@@ -89,7 +124,6 @@ app.post("/registration", (req, res) => {
     };
     res.cookie("user_id", userID);
     res.redirect("/urls");
-    res.end();
   } else {
     res.sendStatus(400);
   }
