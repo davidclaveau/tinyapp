@@ -46,16 +46,33 @@ const generateRandomString = (num) => {
   return returnValue;
 };
 
-// FIND TRUE OR FALSE FOR EMAIL IN USERS OBJECT
-const findUserEmail = (userEmail) => {
+// FIND TRUE OR FALSE FOR EMAIL IN USERS OBJECT; OR RETURN ID
+const findUserValue = (userEnteredValue, keyName) => {
   const userIDsArr = Object.keys(users);
-  for (const keys of userIDsArr) {
-    if (userEmail === users[keys]["email"]) {
-      return false;
+  for (const id of userIDsArr) {
+    // We return the user's ID instead of boolean if keyName is "id"
+    if (keyName === "id") {
+      if (userEnteredValue === users[id]["email"]) {
+        return id;
+      }
+    // Otherwise, we just want to make sure the value matches
+    } else if (userEnteredValue === users[id][keyName]) {
+      return true;
     }
   }
-  return true;
+  return false;
 };
+
+// GET USER_ID ()
+// const findUserID = (userEmail) => {
+//   const userIDsArr = Object.keys(users);
+//   for (const id of userIDsArr) {
+//     if (userEmail === users[id]["email"]) {
+//       return id;
+//     }
+//   }
+//   return;
+// };
 
 // GET HOMEPAGE
 app.get("/", (req, res) => {
@@ -78,12 +95,8 @@ app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
 
-
-  const userIds = Object.keys(users);
-  for (const keys of userIds) {
-    if (userEmail === users[keys]["email"] && userPassword === users[keys]["password"]) {
-      userID = keys;
-    }
+  if (findUserValue(userEmail, "email") && findUserValue(userPassword, "password")) {
+    userID = findUserValue(userEmail, "id");
   }
 
   if (userID === 0) {
@@ -116,7 +129,7 @@ app.post("/registration", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
 
-  if (userEmail !== "" && userPassword !== "" && findUserEmail(userEmail)) {
+  if (userEmail !== "" && userPassword !== "" && !findUserValue(userEmail, "email")) {
     users[userID] = {
       id: userID,
       email: userEmail,
