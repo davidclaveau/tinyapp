@@ -8,8 +8,8 @@
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
-        <% if (username) { %>
-          <a class="nav-item nav-link" style="color:black" href="#">Welcome, <%= username %></a>
+        <% if (user !== undefined && user["email"]) { %>
+          <a class="nav-item nav-link" style="color:black" href="#">Welcome, <%= user.email %></a>
           <form method="POST" action="/logout">
             <button type="submit" class="btn btn-light" >Logout</button>
           </form>

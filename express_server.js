@@ -1,42 +1,82 @@
-const express = require('express');
+const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser')
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
 
+// SUPER SECURE DATABASES
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.use(cookieParser())
-app.use(bodyParser.urlencoded({extended: true}));
-app.set('view engine', 'ejs');
+const users = {
+  "userRandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+  "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  }
+};
 
-const generateRandomString = () => {
+// MIDDLEWARE
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+
+// HELPER FUNCTIONS
+const generateRandomString = (num) => {
   let returnValue = "";
   const randomCharacter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < num; i++) {
     returnValue += randomCharacter[Math.floor(Math.random() * 61)];
   }
 
   return returnValue;
 };
 
-// HOMEPAGE
+// GET HOMEPAGE
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
 // LOGIN
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  res.cookie("user_id", req.body.user_id);
   res.redirect("/urls");
 });
 
 // LOGOUT
 app.post("/logout", (req, res) => {
-  res.clearCookie('username', req.cookies["username"])
+  res.clearCookie("user_id", req.cookies["user_id"]);
+  res.redirect("/urls");
+});
+
+// GET REGISTRATION FORM
+app.get("/registration", (req, res) => {
+  const templateVars = { user: users[req.cookies["user_id"]]};
+  res.render("registration", templateVars);
+});
+
+// CREATE NEW USER
+app.post("/registration", (req, res) => {
+  const userID = generateRandomString(10);
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+
+  users[userID] = {
+    id: userID,
+    email: userEmail,
+    password: userPassword
+  };
+
+  res.cookie("user_id", userID);
+
+  console.log(users);
   res.redirect("/urls");
 });
 
@@ -50,25 +90,24 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
   res.render("urls_index", templateVars);
 });
 
-// CREATE NEW URL FROM URL/NEW && ADD TO MY URLS
+// CREATE SHORTURL FROM URL/NEW && ADD TO MY URLS
 app.post("/urls", (req, res) => {
-  const newShortURL = generateRandomString();
+  const newShortURL = generateRandomString(6);
   const newLongURL = req.body.longURL;
   urlDatabase[newShortURL] = newLongURL;
 
   res.redirect(`/urls/${newShortURL}`);
 });
 
-// CREATE URL
+// SHOW TEMPLATE TO CREATE NEW URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    username: req.cookies["username"]
-  };
+  console.log(req.cookies["user_id"]);
+  const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
 
@@ -77,7 +116,7 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL],
-    username: req.cookies["username"]
+    user: users[req.cookies["user_id"]]
   };
 
   if (!urlDatabase[req.params.shortURL]) {
@@ -92,21 +131,21 @@ app.post("/urls/:shortURL/update", (req, res) => {
   const shortURL = req.params.shortURL;
   const newLongURL = req.body.longURL;
   urlDatabase[shortURL] = newLongURL;
-  res.redirect(`/urls/${shortURL}`)
+  res.redirect(`/urls/${shortURL}`);
 });
 
 // DELETE URL BUTTON
 app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[req.params.shortURL];
-  res.redirect("/urls")
+  res.redirect("/urls");
 });
 
-app.get('/urls.json', (req, res) => {
+app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get('/hello', (req, res) => {
-  res.send('<html><body>Hello <b>World</b></body></html>\n');
+app.get("/hello", (req, res) => {
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
 app.listen(PORT, () => {
