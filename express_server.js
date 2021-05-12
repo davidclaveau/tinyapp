@@ -4,6 +4,11 @@ const PORT = 8080; // default port 8080
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser')
 
+const urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+};
+
 app.use(cookieParser())
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('view engine', 'ejs');
@@ -18,35 +23,30 @@ const generateRandomString = () => {
   return returnValue;
 };
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
-// const cookieDatabase = {
-//   "name": "David"
-// };
-
+// HOMEPAGE
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+// LOGIN
 app.post("/login", (req, res) => {
   res.cookie('username', req.body.username);
   res.redirect("/urls");
 });
 
+// LOGOUT
 app.post("/logout", (req, res) => {
-  console.log(req.cookies["username"]);
   res.clearCookie('username', req.cookies["username"])
   res.redirect("/urls");
 });
 
+// REDIRECT SHORT URL TO LONGURL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
 
+// MY URLS PAGE
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -55,6 +55,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// CREATE NEW URL FROM URL/NEW && ADD TO MY URLS
 app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString();
   const newLongURL = req.body.longURL;
@@ -63,22 +64,15 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${newShortURL}`);
 });
 
-app.post("/urls/:id/delete", (req, res) => {
-  delete urlDatabase[req.params.id];
-  res.redirect("/urls")
-});
-
-app.post("/urls/:id/update", (req, res) => {
-  const shortURL = req.params.id
-  const newLongURL = req.body.longURL;
-  urlDatabase[shortURL] = newLongURL;
-  res.redirect(`/urls/${shortURL}`)
-});
-
+// CREATE URL
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  const templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_new", templateVars);
 });
 
+// EACH SHORTURL PAGE
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = {
     shortURL: req.params.shortURL,
@@ -91,6 +85,20 @@ app.get("/urls/:shortURL", (req, res) => {
   }
   
   res.render("urls_show", templateVars);
+});
+
+// EDIT URL FROM SHORTURL PAGE
+app.post("/urls/:shortURL/update", (req, res) => {
+  const shortURL = req.params.shortURL;
+  const newLongURL = req.body.longURL;
+  urlDatabase[shortURL] = newLongURL;
+  res.redirect(`/urls/${shortURL}`)
+});
+
+// DELETE URL BUTTON
+app.post("/urls/:shortURL/delete", (req, res) => {
+  delete urlDatabase[req.params.shortURL];
+  res.redirect("/urls")
 });
 
 app.get('/urls.json', (req, res) => {
