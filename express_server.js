@@ -71,6 +71,17 @@ const findUserValue = (userEnteredValue, keyName) => {
   return false;
 };
 
+const getUserPassword = (userEmail) => {
+  const userIDsArr = Object.keys(users);
+  for (const id of userIDsArr) {
+
+    if (userEmail === users[id]["email"]) {
+      return users[id]["password"];
+    }
+  }
+  return undefined;
+};
+
 // GET USERS URLS BASED ON ID
 const urlsForUser = (user) => {
   let returnUrls = {};
@@ -110,26 +121,34 @@ app.get("/login", (req, res) => {
 
 // LOGIN
 app.post("/login", (req, res) => {
-
-  let userID = 0;
+  console.log("Login - All users:", users);
   const userEmail = req.body.email;
   const userPassword = req.body.password;
+  
+  if (findUserValue(userEmail, "email")) {
+    const hashPassword = getUserPassword(userEmail);
 
-  if (findUserValue(userEmail, "email") && findUserValue(userPassword, "password")) {
-    userID = findUserValue(userEmail, "id");
-  }
-
-  if (userID === 0) {
-    const templateVars = {
-      attempt: "incorrect",
-      user: users[req.cookies["user_id"]]
-    };
-    res.render("login", templateVars);
+    bcrypt.compare(userPassword, hashPassword, (err, result) => {
+      if (err) {
+        console.log("err3", err);
+        return res.sendStatus(500).end();
+      }
+      if (result) {
+        const userID = findUserValue(userEmail, "id");
+        res.cookie("user_id", userID);
+      }
+    });
+    res.redirect("/urls");
     return;
   }
- 
-  res.cookie("user_id", userID);
-  res.redirect("/urls");
+
+  const templateVars = {
+    attempt: "incorrect",
+    user: users[req.cookies["user_id"]]
+  };
+
+  res.render("login", templateVars);
+  return;
 });
 
 // LOGOUT
@@ -152,9 +171,13 @@ app.post("/registration", (req, res) => {
 
   if (userEmail !== "" && userPassword !== "" && !findUserValue(userEmail, "email")) {
     bcrypt.genSalt(saltRounds, (err, salt) => {
+      if (err) {
+        console.log("err1", err);
+        return res.sendStatus(500).end();
+      }
       bcrypt.hash(userPassword, salt, (err, hash) => {
         if (err) {
-          console.log("err", err)
+          console.log("err2", err);
           return res.sendStatus(500).end();
         }
         users[userID] = {
@@ -163,6 +186,7 @@ app.post("/registration", (req, res) => {
           password: hash
         };
 
+        console.log("Registration - All users:", users);
         res.cookie("user_id", userID);
         res.redirect("/urls");
       });
