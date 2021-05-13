@@ -3,6 +3,8 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 // SUPER SECURE DATABASES
 const urlDatabase = {
@@ -149,13 +151,22 @@ app.post("/registration", (req, res) => {
   const userPassword = req.body.password;
 
   if (userEmail !== "" && userPassword !== "" && !findUserValue(userEmail, "email")) {
-    users[userID] = {
-      id: userID,
-      email: userEmail,
-      password: userPassword
-    };
-    res.cookie("user_id", userID);
-    res.redirect("/urls");
+    bcrypt.genSalt(saltRounds, (err, salt) => {
+      bcrypt.hash(userPassword, salt, (err, hash) => {
+        if (err) {
+          console.log("err", err)
+          return res.sendStatus(500).end();
+        }
+        users[userID] = {
+          id: userID,
+          email: userEmail,
+          password: hash
+        };
+
+        res.cookie("user_id", userID);
+        res.redirect("/urls");
+      });
+    });
     return;
   }
   
