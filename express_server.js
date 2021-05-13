@@ -124,7 +124,7 @@ app.get("/", (req, res) => {
 app.get("/login", (req, res) => {
   const templateVars = {
     attempt: "correct",
-    user: users[req.cookies["user_id"]]
+    user: req.session.user_id
   };
   res.render("login", templateVars);
 });
@@ -145,7 +145,7 @@ app.post("/login", (req, res) => {
       }
       if (result) {
         const userID = findUserValue(userEmail, "id");
-        res.cookie("user_id", userID);
+        req.session.user_id = userID;
         res.redirect("/urls");
         return;
       }
@@ -163,7 +163,7 @@ app.post("/login", (req, res) => {
 
 // LOGOUT
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id", req.cookies["user_id"]);
+  req.session = null;
   res.redirect("/urls");
 });
 
@@ -197,7 +197,7 @@ app.post("/registration", (req, res) => {
         };
 
         console.log("Registration - All users:", users);
-        res.cookie("user_id", userID);
+        req.session.user_id = userID;
         res.redirect("/urls");
       });
     });
@@ -215,11 +215,13 @@ app.get("/u/:shortURL", (req, res) => {
 
 // MY URLS PAGE
 app.get("/urls", (req, res) => {
-  const user = users[req.cookies["user_id"]];
+  const user = req.session.user_id;
   const userUrls = urlsForUser(user);
+  const profile = users[req.session.user_id];
 
   const templateVars = {
     user,
+    profile,
     urls: userUrls
   };
   res.render("urls_index", templateVars);
