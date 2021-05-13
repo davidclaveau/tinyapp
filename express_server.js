@@ -5,17 +5,27 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const cookieSession = require('cookie-session');
+
+app.use(cookieSession({
+  name: 'session',
+  keys: ['never', 'gonna', 'give', 'you', 'up'],
+
+  // Cookie Options
+  maxAge: 24 * 60 * 60 * 1000 * 10 // 10 days
+}));
+
 
 // SUPER SECURE DATABASES
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: '8675309'
+    userID: 'E1Xoq5rffL'
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: '8675309'
-  }
+    userID: 'E1Xoq5rffL'
+  },
 };
 
 const users = {
@@ -29,10 +39,10 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   },
-  "8675309": {
-    id: "8675309",
-    email: "test@test.com",
-    password: "test"
+  "E1Xoq5rffL": {
+    id: 'E1Xoq5rffL',
+    email: 'asdf@asdf',
+    password: '$2b$10$4RYCI1zDAqN8vYACgLTycuWEfeY/yGYAf/rVl5tGrg9MVKX6XIxJm'
   }
 };
 
@@ -136,19 +146,19 @@ app.post("/login", (req, res) => {
       if (result) {
         const userID = findUserValue(userEmail, "id");
         res.cookie("user_id", userID);
+        res.redirect("/urls");
+        return;
       }
     });
-    res.redirect("/urls");
+  } else {
+    const templateVars = {
+      attempt: "incorrect",
+      user: users[req.cookies["user_id"]]
+    };
+  
+    res.render("login", templateVars);
     return;
   }
-
-  const templateVars = {
-    attempt: "incorrect",
-    user: users[req.cookies["user_id"]]
-  };
-
-  res.render("login", templateVars);
-  return;
 });
 
 // LOGOUT
