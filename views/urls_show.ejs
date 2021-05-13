@@ -17,19 +17,29 @@
       <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
     </div>
   </div>
-
-  <div class="card text-center">
-    <div class="card-header">
-      <h2>Edit</h2>
-      <form action="/urls/<%= shortURL %>/update" method="POST">
-        <div>
-          <label for="longURL">New URL:</label>
-          <input type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
-          <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-      </form>
+  <% if (!user) { %>
+    <!-- Prompt user to login or register if they aren't already logged in -->
+    <div class="card text-center">
+      <div class="card-header"></div>
+      <div class="card-body">
+        <p class="card-text"><a href="/login">Login</a> or <a href="/registration">Register</a> to see your own shortened URLs!</p>
+      </div>
     </div>
-  </div> 
+  <% } else { %>
+    <div class="card text-center">
+      <div class="card-header">
+        <h2>Edit</h2>
+        <form action="/urls/<%= shortURL %>/update" method="POST">
+          <div>
+            <label for="longURL">New URL:</label>
+            <input type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </form>
+      </div>
+    </div> 
+  <% } %>
+    
 
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>

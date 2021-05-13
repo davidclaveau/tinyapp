@@ -14,32 +14,40 @@
   
   <main style="margin: 1em;">
     <h3>My URLs</h3>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Short URL</th>
-          <th scope="col">Long URL</th>
-          <th scope="col">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% for(let url in urls) { %>
-          <!-- Only show URLs for that specific user -->
-          <% if (user !== undefined && user.id === urls[url]["userID"]) { %>
+    <% if (!user) { %>
+      <!-- Prompt user to login or register if they aren't already logged in -->
+      <div class="card text-center">
+        <div class="card-header"></div>
+        <div class="card-body">
+          <p class="card-text"><a href="/login">Login</a> or <a href="/registration">Register</a> to see your own shortened URLs!</p>
+        </div>
+      </div>
+    <% } else { %>
+      <!-- Only show URLs for that specific user -->
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Short URL</th>
+            <th scope="col">Long URL</th>
+            <th scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% for(let url in urls) { %>
             <tr>
-                <td><%= url %></td>
-                <td><%= urls[url]["longURL"] %></td>
-                <td style="display:flex">
+              <td><%= url %></td>
+              <td><%= urls[url]["longURL"] %></td>
+              <td style="display:flex;">
                 <a href="/urls/<%= url %>"><button type="submit" class="btn btn-outline-info" style="margin: .3em">Info</button></a>
                 <form method="POST" action="/urls/<%= url %>/delete">
                   <button type="submit" class="btn btn-outline-danger" style="margin: .3em">Delete</button>
                 </form>
               </td>
             </tr>
-          <% } %>
-        <% } %>
-      </tbody>
-    </table>
+            <% } %>
+        </tbody>
+      </table>
+    <% } %>
   </main>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
