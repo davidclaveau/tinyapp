@@ -24,16 +24,19 @@
       </thead>
       <tbody>
         <% for(let url in urls) { %>
-          <tr>
-            <td><%= url %></td>
-            <td><%= urls[url] %></td>
-            <td style="display:flex">
-              <a href="/urls/<%= url %>"><button type="submit" class="btn btn-outline-info" style="margin: .3em">Info</button></a>
-              <form method="POST" action="/urls/<%= url %>/delete">
-                <button type="submit" class="btn btn-outline-danger" style="margin: .3em">Delete</button>
-              </form>
-            </td>
-          </tr>
+          <!-- Only show URLs for that specific user -->
+          <% if (user !== undefined && user.id === urls[url]["userID"]) { %>
+            <tr>
+                <td><%= url %></td>
+                <td><%= urls[url]["longURL"] %></td>
+                <td style="display:flex">
+                <a href="/urls/<%= url %>"><button type="submit" class="btn btn-outline-info" style="margin: .3em">Info</button></a>
+                <form method="POST" action="/urls/<%= url %>/delete">
+                  <button type="submit" class="btn btn-outline-danger" style="margin: .3em">Delete</button>
+                </form>
+              </td>
+            </tr>
+          <% } %>
         <% } %>
       </tbody>
     </table>

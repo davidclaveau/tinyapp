@@ -10,6 +10,7 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
       <div class="navbar-nav">  
+        <!-- Show user's login email and logout button if they're logged in -->
         <% if (user !== undefined && user["email"]) { %>
           <a class="nav-item nav-link" style="color:black" href="#">Logged in as: <%= user.email %>!</a>
           <form method="POST" action="/logout">

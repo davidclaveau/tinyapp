@@ -6,8 +6,14 @@ const cookieParser = require("cookie-parser");
 
 // SUPER SECURE DATABASES
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: '8675309'
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: '8675309'
+  }
 };
 
 const users = {
@@ -21,8 +27,8 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   },
-  "user3RandomID": {
-    id: "user3RandomID",
+  "8675309": {
+    id: "8675309",
     email: "test@test.com",
     password: "test"
   }
@@ -90,7 +96,7 @@ app.get("/login", (req, res) => {
 
 // LOGIN
 app.post("/login", (req, res) => {
-  // res.cookie("user_id", req.body.user_id);
+
   let userID = 0;
   const userEmail = req.body.email;
   const userPassword = req.body.password;
@@ -104,7 +110,7 @@ app.post("/login", (req, res) => {
       attempt: "incorrect",
       user: users[req.cookies["user_id"]]
     };
-    res.render("login", templateVars);
+    return res.render("login", templateVars);
   }
  
   res.cookie("user_id", userID);
@@ -136,15 +142,15 @@ app.post("/registration", (req, res) => {
       password: userPassword
     };
     res.cookie("user_id", userID);
-    res.redirect("/urls");
-  } else {
-    res.sendStatus(400);
+    return res.redirect("/urls");
   }
+  
+  res.sendStatus(400).end();
 });
 
 // REDIRECT SHORT URL TO LONGURL
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
 
@@ -161,8 +167,11 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString(6);
   const newLongURL = req.body.longURL;
-  urlDatabase[newShortURL] = newLongURL;
+  urlDatabase[newShortURL] = {
+    longURL: newLongURL,
+    userID: req.cookies.user_id};
 
+  console.log("urlDatabase:", urlDatabase);
   res.redirect(`/urls/${newShortURL}`);
 });
 
@@ -171,32 +180,33 @@ app.get("/urls/new", (req, res) => {
 
   if (req.cookies.user_id) {
     const templateVars = { user: users[req.cookies["user_id"]] };
-    res.render("urls_new", templateVars);
-  } else {
-    res.redirect("/login");
+    return res.render("urls_new", templateVars);
   }
+  return res.redirect("/login");
 });
 
 // EACH SHORTURL PAGE
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = {
-    shortURL: req.params.shortURL,
-    longURL: urlDatabase[req.params.shortURL],
-    user: users[req.cookies["user_id"]]
-  };
-
-  if (!urlDatabase[req.params.shortURL]) {
-    res.sendStatus(404);
+  if (urlDatabase[req.params.shortURL]) {
+    const templateVars = {
+      shortURL: req.params.shortURL,
+      longURL: urlDatabase[req.params.shortURL]["longURL"],
+      user: users[req.cookies["user_id"]]
+    };
+    return res.render("urls_show", templateVars);
   }
-  
-  res.render("urls_show", templateVars);
+
+  return res.sendStatus(404).end();
 });
 
 // EDIT URL FROM SHORTURL PAGE
 app.post("/urls/:shortURL/update", (req, res) => {
   const shortURL = req.params.shortURL;
   const newLongURL = req.body.longURL;
-  urlDatabase[shortURL] = newLongURL;
+  urlDatabase[shortURL] = {
+    longURL: newLongURL,
+    userID: req.cookies.user_id
+  };
   res.redirect(`/urls/${shortURL}`);
 });
 
