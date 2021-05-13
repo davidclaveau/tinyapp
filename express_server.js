@@ -64,29 +64,32 @@ const generateRandomString = (num) => {
   return returnValue;
 };
 
-// FIND TRUE OR FALSE FOR EMAIL IN USERS OBJECT; OR RETURN ID
-const findUserValue = (userEnteredValue, keyName) => {
-  const userIDsArr = Object.keys(users);
+// RETURN EMAIL IN USERS DATABASE
+const getUserByEmail = (email, database) => {
+  const userIDsArr = Object.keys(database);
   for (const id of userIDsArr) {
-    // We return the user's ID instead of boolean if keyName is "id"
-    if (keyName === "id") {
-      if (userEnteredValue === users[id]["email"]) {
-        return id;
-      }
-    // Otherwise, we just want to make sure the value matches
-    } else if (userEnteredValue === users[id][keyName]) {
+    if (email === users[id]["email"]) {
       return true;
     }
   }
-  return false;
+  return undefined;
 };
 
-const getUserPassword = (userEmail) => {
-  const userIDsArr = Object.keys(users);
+const getUserByPassword = (email, database) => {
+  const userIDsArr = Object.keys(database);
   for (const id of userIDsArr) {
-
-    if (userEmail === users[id]["email"]) {
+    if (email === users[id]["email"]) {
       return users[id]["password"];
+    }
+  }
+  return undefined;
+};
+
+const getUserByID = (email, database) => {
+  const userIDsArr = Object.keys(database);
+  for (const id of userIDsArr) {
+    if (email === database[id]["email"]) {
+      return id;
     }
   }
   return undefined;
@@ -139,8 +142,8 @@ app.post("/login", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   
-  if (findUserValue(userEmail, "email")) {
-    const hashPassword = getUserPassword(userEmail);
+  if (getUserByEmail(userEmail, users)) {
+    const hashPassword = getUserByPassword(userEmail, users);
 
     bcrypt.compare(userPassword, hashPassword, (err, result) => {
       if (err) {
@@ -148,7 +151,7 @@ app.post("/login", (req, res) => {
         return res.sendStatus(500).end();
       }
       if (result) {
-        const userID = findUserValue(userEmail, "id");
+        const userID = getUserByID(userEmail, users);
         req.session.user_id = userID;
         res.redirect("/urls");
         return;
@@ -183,7 +186,7 @@ app.post("/registration", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
 
-  if (userEmail !== "" && userPassword !== "" && !findUserValue(userEmail, "email")) {
+  if (userEmail !== "" && userPassword !== "" && !getUserByEmail(userEmail, users)) {
     bcrypt.genSalt(saltRounds, (err, salt) => {
       if (err) {
         console.log("err1", err);
