@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const cookieSession = require('cookie-session');
+const { getUserByEmail, getUserByPassword, getUserByID, getUrlsForUser, generateRandomString } = require('./helpers');
 
 app.use(cookieSession({
   name: 'session',
@@ -50,73 +51,6 @@ const users = {
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-
-// HELPER FUNCTIONS
-
-// GENERATE RANDOM STRING
-const generateRandomString = (num) => {
-  let returnValue = "";
-  const randomCharacter = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
-  for (let i = 0; i < num; i++) {
-    returnValue += randomCharacter[Math.floor(Math.random() * 61)];
-  }
-
-  return returnValue;
-};
-
-// RETURN EMAIL IN USERS DATABASE
-const getUserByEmail = (email, database) => {
-  const userIDsArr = Object.keys(database);
-  for (const id of userIDsArr) {
-    if (email === users[id]["email"]) {
-      return true;
-    }
-  }
-  return undefined;
-};
-
-const getUserByPassword = (email, database) => {
-  const userIDsArr = Object.keys(database);
-  for (const id of userIDsArr) {
-    if (email === users[id]["email"]) {
-      return users[id]["password"];
-    }
-  }
-  return undefined;
-};
-
-const getUserByID = (email, database) => {
-  const userIDsArr = Object.keys(database);
-  for (const id of userIDsArr) {
-    if (email === database[id]["email"]) {
-      return id;
-    }
-  }
-  return undefined;
-};
-
-// GET USERS URLS BASED ON ID
-const urlsForUser = (user) => {
-  let returnUrls = {};
-  const urls = Object.keys(urlDatabase);
-  for (let key of urls) {
-    if (user !== undefined && user === urlDatabase[key]["userID"]) {
-      returnUrls[key] = urlDatabase[key];
-    }
-  }
-  return returnUrls;
-};
-
-// GET USER_ID ()
-// const findUserID = (userEmail) => {
-//   const userIDsArr = Object.keys(users);
-//   for (const id of userIDsArr) {
-//     if (userEmail === users[id]["email"]) {
-//       return id;
-//     }
-//   }
-//   return;
-// };
 
 // GET HOMEPAGE
 app.get("/", (req, res) => {
@@ -223,7 +157,7 @@ app.get("/u/:shortURL", (req, res) => {
 // MY URLS PAGE
 app.get("/urls", (req, res) => {
   const user = req.session.user_id;
-  const userUrls = urlsForUser(user);
+  const userUrls = getUrlsForUser(user, urlDatabase);
   const profile = users[req.session.user_id];
 
   const templateVars = {
