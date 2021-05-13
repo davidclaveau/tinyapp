@@ -168,8 +168,13 @@ app.post("/urls", (req, res) => {
 
 // SHOW TEMPLATE TO CREATE NEW URL
 app.get("/urls/new", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("urls_new", templateVars);
+
+  if (req.cookies.user_id) {
+    const templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 // EACH SHORTURL PAGE
