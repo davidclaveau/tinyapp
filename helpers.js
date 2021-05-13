@@ -2,7 +2,7 @@ const getUserByEmail = (email, database) => {
   const userIDsArr = Object.keys(database);
   for (const id of userIDsArr) {
     if (email === database[id]["email"]) {
-      return true;
+      return database[id]["id"];
     }
   }
   return undefined;
@@ -22,7 +22,7 @@ const getUserByID = (email, database) => {
   const userIDsArr = Object.keys(database);
   for (const id of userIDsArr) {
     if (email === database[id]["email"]) {
-      return id;
+      return database[id]["id"];
     }
   }
   return undefined;

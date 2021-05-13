@@ -12,7 +12,6 @@ app.use(cookieSession({
   name: 'session',
   keys: ['never', 'gonna', 'give', 'you', 'up'],
 
-  // Cookie Options
   maxAge: 24 * 60 * 60 * 1000 * 10 // 10 days
 }));
 
