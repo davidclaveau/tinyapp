@@ -39,7 +39,7 @@
               <td><%= urls[url]["longURL"] %></td>
               <td style="display:flex;">
                 <a href="/urls/<%= url %>"><button type="submit" class="btn btn-outline-info" style="margin: .3em">Info</button></a>
-                <form method="POST" action="/urls/<%= url %>/delete">
+                <form method="POST" action="/urls/<%= url %>?_method=DELETE">
                   <button type="submit" class="btn btn-outline-danger" style="margin: .3em">Delete</button>
                 </form>
               </td>

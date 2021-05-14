@@ -1,17 +1,25 @@
 const express = require("express");
 const app = express();
 const PORT = 8080;
+
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
+const methodOverride = require('method-override');
 const cookieSession = require('cookie-session');
 const { getUserByEmail, getUserByPassword, getUserByID, getUrlsForUser, generateRandomString } = require('./helpers');
 
+// MIDDLEWARE
+
+app.use(cookieParser());
+app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+app.use(methodOverride('_method'));
 app.use(cookieSession({
   name: 'session',
   keys: ['never', 'gonna', 'give', 'you', 'up'],
-
+  
   maxAge: 24 * 60 * 60 * 1000 * 10 // 10 days
 }));
 
@@ -46,10 +54,6 @@ const users = {
   }
 };
 
-// MIDDLEWARE
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({extended: true}));
-app.set("view engine", "ejs");
 
 // GET HOMEPAGE
 app.get("/", (req, res) => {
@@ -233,13 +237,12 @@ app.post("/urls/:shortURL/update", (req, res) => {
 });
 
 // DELETE URL BUTTON
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
     return;
   }
-
   res.sendStatus(401).end();
 });
 
