@@ -14,24 +14,26 @@
 
     <%- include('partials/_header') %>
 
-    <% if (attempt === "incorrect") { %>
-      <h3>Incorrect Username/Password - Try Again</h3>
-    <% } %>
-
+    
     <main style="margin: 1em;">
       <h3>Login</h3>
       <form class="form-inline" action="/login" method="POST">
         <div class="form-group mb-2">
           <label for="longURL">Email:</label>
           <input class="form-control" type="email" name="email" placeholder="email@inbox.com" style="width: 15rem; margin: 1em">
-
+          
           <label for="longURL">Password:</label>
           <input class="form-control" type="password" name="password" style="width: 15rem; margin: 1em">
           <button type="submit" class="btn btn-primary">Login</button>
         </div>
       </form>
+      <% if (attempt === "incorrect") { %>
+        <div class="alert alert-warning">
+          <strong>Error!</strong> Username or password incorrect. Please try again.
+        </div>
+      <% } %>
     </main>
-
+    
       <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>

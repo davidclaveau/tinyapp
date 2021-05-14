@@ -11,7 +11,6 @@ const cookieSession = require('cookie-session');
 const { getUserByEmail, getUserByPassword, getUserByID, getUrlsForUser, generateRandomString } = require('./helpers');
 
 // MIDDLEWARE
-
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
@@ -61,24 +60,21 @@ const users = {
 app.get("/", (req, res) => {
   const user = req.session.user_id;
   const profile = users[req.session.user_id];
-
   const templateVars = {
     user,
     profile
   };
-
   res.render("home", templateVars);
 });
 
+// GET HOMEPAGE
 app.get("/home", (req, res) => {
   const user = req.session.user_id;
   const profile = users[req.session.user_id];
-
   const templateVars = {
     user,
     profile
   };
-
   res.render("home", templateVars);
 });
 
@@ -86,28 +82,27 @@ app.get("/home", (req, res) => {
 app.get("/login", (req, res) => {
   const user = req.session.user_id;
   const profile = users[req.session.user_id];
-
   const templateVars = {
     user,
     profile,
-    attempt: "correct",
+    attempt: "correct"
   };
   res.render("login", templateVars);
 });
 
 // LOGIN
 app.post("/login", (req, res) => {
-  console.log("Login - All users:", users);
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   
+  // If email entered is correct
   if (getUserByEmail(userEmail, users)) {
     const hashPassword = getUserByPassword(userEmail, users);
 
     bcrypt.compare(userPassword, hashPassword, (err, result) => {
       if (err) {
-        console.log("err3", err);
-        return res.sendStatus(500).end();
+        res.sendStatus(401).end();
+        return;
       }
       if (result) {
         const userID = getUserByID(userEmail, users);
@@ -117,11 +112,11 @@ app.post("/login", (req, res) => {
       }
     });
   } else {
+    // Otherwise, ask user to try logging in again
     const templateVars = {
       attempt: "incorrect",
       user: req.session.user_id
     };
-  
     res.render("login", templateVars);
     return;
   }
@@ -135,7 +130,13 @@ app.post("/logout", (req, res) => {
 
 // GET REGISTRATION FORM
 app.get("/registration", (req, res) => {
-  const templateVars = { user: req.session.user_id};
+  // Redirect user from this page if already logged in
+  if (req.session.user_id) {
+    res.redirect("/urls");
+    return;
+  }
+
+  const templateVars = { user: req.session.user_id };
   res.render("registration", templateVars);
 });
 
@@ -145,16 +146,17 @@ app.post("/registration", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
 
+  // If email or password isn't empty, and email isn't already in use
   if (userEmail !== "" && userPassword !== "" && !getUserByEmail(userEmail, users)) {
     bcrypt.genSalt(saltRounds, (err, salt) => {
       if (err) {
-        console.log("err1", err);
-        return res.sendStatus(500).end();
+        res.sendStatus(401).end();
+        return;
       }
       bcrypt.hash(userPassword, salt, (err, hash) => {
         if (err) {
-          console.log("err2", err);
-          return res.sendStatus(500).end();
+          res.sendStatus(401).end();
+          return;
         }
         users[userID] = {
           id: userID,
@@ -162,12 +164,12 @@ app.post("/registration", (req, res) => {
           password: hash
         };
 
-        console.log("Registration - All users:", users);
+        // Assign the userID as encrypted cookie
         req.session.user_id = userID;
         res.redirect("/urls");
+        return;
       });
     });
-    return;
   }
   
   res.sendStatus(400).end();
@@ -175,7 +177,9 @@ app.post("/registration", (req, res) => {
 
 // REDIRECT SHORT URL TO LONGURL
 app.get("/u/:shortURL", (req, res) => {
+  // Count number of visits
   urlDatabase[req.params.shortURL]["visitNum"] += 1;
+
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
@@ -208,6 +212,7 @@ app.post("/urls", (req, res) => {
 
 // SHOW TEMPLATE TO CREATE NEW URL
 app.get("/urls/new", (req, res) => {
+  // Only allow user to create new urls if logged in
   if (req.session.user_id) {
     const user = req.session.user_id;
     const profile = users[req.session.user_id];
@@ -224,6 +229,7 @@ app.get("/urls/new", (req, res) => {
 
 // SHOW SHORTURL EDIT PAGE
 app.get("/urls/:shortURL", (req, res) => {
+  // Only show shortURL pages that exist, otherwise send 404
   if (urlDatabase[req.params.shortURL]) {
     const user = req.session.user_id;
     const profile = users[req.session.user_id];
@@ -246,6 +252,7 @@ app.get("/urls/:shortURL", (req, res) => {
 
 // EDIT URL FROM SHORTURL PAGE
 app.put("/urls/:shortURL", (req, res) => {
+  // Only allow users whose cookie matches userID to edit shortURLs, otherwise send 401
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
     const shortURL = req.params.shortURL;
     const newLongURL = req.body.longURL;
@@ -263,6 +270,7 @@ app.put("/urls/:shortURL", (req, res) => {
 
 // DELETE URL BUTTON
 app.delete("/urls/:shortURL", (req, res) => {
+  // Only allow users whose cookie matches userID to delete shortURLs, otherwise send 401
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
     delete urlDatabase[req.params.shortURL];
     res.redirect("/urls");
@@ -276,6 +284,7 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/hello", (req, res) => {
+  // Keep this easter egg, as no one told me to remove it :)
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
