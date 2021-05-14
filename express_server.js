@@ -220,7 +220,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 // EDIT URL FROM SHORTURL PAGE
-app.post("/urls/:shortURL/update", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
     const shortURL = req.params.shortURL;
     const newLongURL = req.body.longURL;

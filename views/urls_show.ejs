@@ -29,7 +29,7 @@
     <div class="card text-center">
       <div class="card-header">
         <h2>Edit</h2>
-        <form action="/urls/<%= shortURL %>/update" method="POST">
+        <form action="/urls/<%= shortURL %>?_method=PUT" method="POST">
           <div>
             <label for="longURL">New URL:</label>
             <input type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
