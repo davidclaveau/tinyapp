@@ -14,8 +14,22 @@
 
     <%- include('partials/_header') %>
 
-    
     <main style="margin: 1em;">
+      <% if (user) { %>
+        <!-- Only show if the user is already logged in and tries to come back to the login screen -->
+        <div class="card text-center">
+          <div class="card-body">
+            <h1 class="card-title">Already logged in!</h5>
+          </div>
+        </div>
+        <div class="card text-center">
+          <div class="card-header"></div>
+          <div class="card-body">
+            <a href="/urls"><button type="submit" class="btn btn-primary" style="margin: .3em">See your URLs</button></a>
+            <a href="/urls/new"><button type="submit" class="btn btn-primary" style="margin: .3em">Create New URLs</button></a>
+          </div>
+        </div>
+      <% } else { %>
       <h3>Login</h3>
       <form class="form-inline" action="/login" method="POST">
         <div class="form-group mb-2">
@@ -27,6 +41,7 @@
           <button type="submit" class="btn btn-primary">Login</button>
         </div>
       </form>
+      <% } %>
       <% if (attempt === "incorrect") { %>
         <div class="alert alert-warning">
           <strong>Error!</strong> Username or password incorrect. Please try again.

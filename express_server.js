@@ -3,7 +3,6 @@ const app = express();
 const PORT = 8080;
 
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 const methodOverride = require('method-override');
@@ -11,7 +10,6 @@ const cookieSession = require('cookie-session');
 const { getUserByEmail, getUserByPassword, getUserByID, getUrlsForUser, generateRandomString } = require('./helpers');
 
 // MIDDLEWARE
-app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 app.use(methodOverride('_method'));
@@ -131,10 +129,10 @@ app.post("/logout", (req, res) => {
 // GET REGISTRATION FORM
 app.get("/registration", (req, res) => {
   // Redirect user from this page if already logged in
-  if (req.session.user_id) {
-    res.redirect("/urls");
-    return;
-  }
+  // if (req.session.user_id) {
+  //   res.redirect("/urls");
+  //   return;
+  // }
 
   const templateVars = { user: req.session.user_id };
   res.render("registration", templateVars);
@@ -170,9 +168,9 @@ app.post("/registration", (req, res) => {
         return;
       });
     });
+  } else {
+    res.sendStatus(400).end();
   }
-  
-  res.sendStatus(400).end();
 });
 
 // REDIRECT SHORT URL TO LONGURL
@@ -255,10 +253,13 @@ app.put("/urls/:shortURL", (req, res) => {
   // Only allow users whose cookie matches userID to edit shortURLs, otherwise send 401
   if (req.session.user_id === urlDatabase[req.params.shortURL]["userID"]) {
     const shortURL = req.params.shortURL;
+    const currentVisits = urlDatabase[req.params.shortURL]["visitNum"];
     const newLongURL = req.body.longURL;
+
     urlDatabase[shortURL] = {
       longURL: newLongURL,
-      userID: req.session.user_id
+      userID: req.session.user_id,
+      visitNum: currentVisits
     };
 
     res.redirect(`/urls/${shortURL}`);
