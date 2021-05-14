@@ -178,6 +178,8 @@ app.get("/u/:shortURL", (req, res) => {
   // Count number of visits
   urlDatabase[req.params.shortURL]["visitNum"] += 1;
 
+  console.log("visitsNum:", urlDatabase[req.params.shortURL]["visitNum"])
+
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
@@ -202,7 +204,8 @@ app.post("/urls", (req, res) => {
   const newLongURL = req.body.longURL;
   urlDatabase[newShortURL] = {
     longURL: newLongURL,
-    userID: req.session.user_id
+    userID: req.session.user_id,
+    visitNum: 0
   };
 
   res.redirect(`/urls/${newShortURL}`);
