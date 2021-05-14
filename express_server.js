@@ -59,7 +59,27 @@ const users = {
 
 // GET HOMEPAGE
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  const user = req.session.user_id;
+  const profile = users[req.session.user_id];
+
+  const templateVars = {
+    user,
+    profile
+  };
+
+  res.render("home", templateVars);
+});
+
+app.get("/home", (req, res) => {
+  const user = req.session.user_id;
+  const profile = users[req.session.user_id];
+
+  const templateVars = {
+    user,
+    profile
+  };
+
+  res.render("home", templateVars);
 });
 
 // LOGIN
