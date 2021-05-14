@@ -35,7 +35,7 @@
         <tbody>
           <% for(let url in urls) { %>
             <tr>
-              <td><%= url %></td>
+              <td><a href="/u/<%= url %>" target="_blank"><%= url %></a></td>
               <td><%= urls[url]["longURL"] %></td>
               <td style="display:flex;">
                 <a href="/urls/<%= url %>"><button type="submit" class="btn btn-outline-info" style="margin: .3em">Info</button></a>

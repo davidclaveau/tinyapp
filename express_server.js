@@ -174,7 +174,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// CREATE SHORTURL FROM URL/NEW && ADD TO MY URLS
+// CREATE SHORTURL FROM URL/NEW && ADD TO 'MY URLS'
 app.post("/urls", (req, res) => {
   const newShortURL = generateRandomString(6);
   const newLongURL = req.body.longURL;
