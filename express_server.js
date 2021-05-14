@@ -28,11 +28,13 @@ app.use(cookieSession({
 const urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
-    userID: 'E1Xoq5rffL'
+    userID: 'E1Xoq5rffL',
+    visitNum: 0
   },
   "9sm5xK": {
     longURL: "http://www.google.com",
-    userID: 'E1Xoq5rffL'
+    userID: 'E1Xoq5rffL',
+    visitNum: 0
   },
 };
 
@@ -153,6 +155,7 @@ app.post("/registration", (req, res) => {
 
 // REDIRECT SHORT URL TO LONGURL
 app.get("/u/:shortURL", (req, res) => {
+  urlDatabase[req.params.shortURL]["visitNum"] += 1;
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
@@ -199,15 +202,17 @@ app.get("/urls/new", (req, res) => {
   res.redirect("/login");
 });
 
-// EACH SHORTURL PAGE
+// SHOW SHORTURL EDIT PAGE
 app.get("/urls/:shortURL", (req, res) => {
   if (urlDatabase[req.params.shortURL]) {
     const user = req.session.user_id;
     const profile = users[req.session.user_id];
+    const visits = urlDatabase[req.params.shortURL]["visitNum"];
 
     const templateVars = {
       user,
       profile,
+      visits,
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL]["longURL"],
     };
