@@ -99,7 +99,16 @@ app.post("/login", (req, res) => {
 
     bcrypt.compare(userPassword, hashPassword, (err, result) => {
       if (err) {
-        res.sendStatus(401).end();
+        const user = req.session.user_id;
+        const profile = users[req.session.user_id];
+        const error = "401: Unauthorized Client";
+        const templateVars = {
+          user,
+          profile,
+          error
+        };
+        
+        res.render("error", templateVars);
         return;
       }
       if (result) {
@@ -148,12 +157,30 @@ app.post("/registration", (req, res) => {
   if (userEmail !== "" && userPassword !== "" && !getUserByEmail(userEmail, users)) {
     bcrypt.genSalt(saltRounds, (err, salt) => {
       if (err) {
-        res.sendStatus(401).end();
+        const user = req.session.user_id;
+        const profile = users[req.session.user_id];
+        const error = "401: Unauthorized Client";
+        const templateVars = {
+          user,
+          profile,
+          error
+        };
+        
+        res.render("error", templateVars);
         return;
       }
       bcrypt.hash(userPassword, salt, (err, hash) => {
         if (err) {
-          res.sendStatus(401).end();
+          const user = req.session.user_id;
+          const profile = users[req.session.user_id];
+          const error = "401: Unauthorized Client";
+          const templateVars = {
+            user,
+            profile,
+            error
+          };
+          
+          res.render("error", templateVars);
           return;
         }
         users[userID] = {
@@ -169,7 +196,16 @@ app.post("/registration", (req, res) => {
       });
     });
   } else {
-    res.sendStatus(400).end();
+    const user = req.session.user_id;
+    const profile = users[req.session.user_id];
+    const error = "400: Bad Request";
+    const templateVars = {
+      user,
+      profile,
+      error
+    };
+    
+    res.render("error", templateVars);
   }
 });
 
@@ -177,9 +213,6 @@ app.post("/registration", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
   // Count number of visits
   urlDatabase[req.params.shortURL]["visitNum"] += 1;
-
-  console.log("visitsNum:", urlDatabase[req.params.shortURL]["visitNum"])
-
   const longURL = urlDatabase[req.params.shortURL]["longURL"];
   res.redirect(longURL);
 });
@@ -248,7 +281,16 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
 
-  res.sendStatus(404).end();
+  const user = req.session.user_id;
+    const profile = users[req.session.user_id];
+    const error = "404: Page Not Found";
+    const templateVars = {
+      user,
+      profile,
+      error
+    };
+        
+  res.render("error", templateVars);
 });
 
 // EDIT URL FROM SHORTURL PAGE
@@ -269,7 +311,17 @@ app.put("/urls/:shortURL", (req, res) => {
     return;
   }
   
-  res.sendStatus(401).end();
+  const user = req.session.user_id;
+  const profile = users[req.session.user_id];
+  const error = "401: Unauthorized Client";
+  const templateVars = {
+    user,
+    profile,
+    error
+  };
+  
+  res.render("error", templateVars);
+  return;
 });
 
 // DELETE URL BUTTON
@@ -280,7 +332,17 @@ app.delete("/urls/:shortURL", (req, res) => {
     res.redirect("/urls");
     return;
   }
-  res.sendStatus(401).end();
+  const user = req.session.user_id;
+  const profile = users[req.session.user_id];
+  const error = "401: Unauthorized Client";
+  const templateVars = {
+    user,
+    profile,
+    error
+  };
+  
+  res.render("error", templateVars);
+  return;
 });
 
 app.get("/urls.json", (req, res) => {
