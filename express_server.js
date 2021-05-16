@@ -9,18 +9,6 @@ const methodOverride = require('method-override');
 const cookieSession = require('cookie-session');
 const { getUserByEmail, getUserByPassword, getUserByID, getUrlsForUser, generateRandomString } = require('./helpers');
 
-// MIDDLEWARE
-app.use(bodyParser.urlencoded({extended: true}));
-app.set("view engine", "ejs");
-app.use(methodOverride('_method'));
-app.use(cookieSession({
-  name: 'session',
-  keys: ['never', 'gonna', 'give', 'you', 'up'],
-  
-  maxAge: 24 * 60 * 60 * 1000 * 10 // 10 days
-}));
-
-
 // SUPER SECURE DATABASES
 const urlDatabase = {
   "b2xVn2": {
@@ -53,6 +41,16 @@ const users = {
   }
 };
 
+// MIDDLEWARE
+app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+app.use(methodOverride('_method'));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['never', 'gonna', 'give', 'you', 'up'],
+  
+  maxAge: 24 * 60 * 60 * 1000 * 10 // 10 days
+}));
 
 // GET HOMEPAGE
 app.get("/", (req, res) => {
@@ -108,7 +106,7 @@ app.post("/login", (req, res) => {
           error
         };
         
-        res.render("error", templateVars);
+        res.status(401).render("error", templateVars);
         return;
       }
       if (result) {
@@ -138,10 +136,10 @@ app.post("/logout", (req, res) => {
 // GET REGISTRATION FORM
 app.get("/registration", (req, res) => {
   // Redirect user from this page if already logged in
-  // if (req.session.user_id) {
-  //   res.redirect("/urls");
-  //   return;
-  // }
+  if (req.session.user_id) {
+    res.redirect("/urls");
+    return;
+  }
 
   const templateVars = { user: req.session.user_id };
   res.render("registration", templateVars);
@@ -153,9 +151,36 @@ app.post("/registration", (req, res) => {
   const userEmail = req.body.email;
   const userPassword = req.body.password;
 
-  // If email or password isn't empty, and email isn't already in use
-  if (userEmail !== "" && userPassword !== "" && !getUserByEmail(userEmail, users)) {
-    bcrypt.genSalt(saltRounds, (err, salt) => {
+  // If email or password is empty, and email is already in use
+  if (userEmail === "" || userPassword === "" || getUserByEmail(userEmail, users)) {
+    const user = req.session.user_id;
+    const profile = users[req.session.user_id];
+    const error = "409: Conflict - Username Already Exists!";
+    const templateVars = {
+      user,
+      profile,
+      error
+    };
+    
+    res.status(409).render("error", templateVars);
+    return;
+  }
+
+  bcrypt.genSalt(saltRounds, (err, salt) => {
+    if (err) {
+      const user = req.session.user_id;
+      const profile = users[req.session.user_id];
+      const error = "401: Unauthorized Client";
+      const templateVars = {
+        user,
+        profile,
+        error
+      };
+      
+      res.status(401).render("error", templateVars);
+      return;
+    }
+    bcrypt.hash(userPassword, salt, (err, hash) => {
       if (err) {
         const user = req.session.user_id;
         const profile = users[req.session.user_id];
@@ -166,47 +191,20 @@ app.post("/registration", (req, res) => {
           error
         };
         
-        res.render("error", templateVars);
+        res.status(401).render("error", templateVars);
         return;
       }
-      bcrypt.hash(userPassword, salt, (err, hash) => {
-        if (err) {
-          const user = req.session.user_id;
-          const profile = users[req.session.user_id];
-          const error = "401: Unauthorized Client";
-          const templateVars = {
-            user,
-            profile,
-            error
-          };
-          
-          res.render("error", templateVars);
-          return;
-        }
-        users[userID] = {
-          id: userID,
-          email: userEmail,
-          password: hash
-        };
+      users[userID] = {
+        id: userID,
+        email: userEmail,
+        password: hash
+      };
 
-        // Assign the userID as encrypted cookie
-        req.session.user_id = userID;
-        res.redirect("/urls");
-        return;
-      });
+      // Assign the userID as encrypted cookie
+      req.session.user_id = userID;
+      res.redirect("/urls");
     });
-  } else {
-    const user = req.session.user_id;
-    const profile = users[req.session.user_id];
-    const error = "400: Bad Request";
-    const templateVars = {
-      user,
-      profile,
-      error
-    };
-    
-    res.render("error", templateVars);
-  }
+  });
 });
 
 // REDIRECT SHORT URL TO LONGURL
@@ -268,11 +266,13 @@ app.get("/urls/:shortURL", (req, res) => {
     const user = req.session.user_id;
     const profile = users[req.session.user_id];
     const visits = urlDatabase[req.params.shortURL]["visitNum"];
+    const userID = urlDatabase[req.params.shortURL]["userID"];
 
     const templateVars = {
       user,
       profile,
       visits,
+      userID,
       shortURL: req.params.shortURL,
       longURL: urlDatabase[req.params.shortURL]["longURL"],
     };
@@ -282,15 +282,15 @@ app.get("/urls/:shortURL", (req, res) => {
   }
 
   const user = req.session.user_id;
-    const profile = users[req.session.user_id];
-    const error = "404: Page Not Found";
-    const templateVars = {
-      user,
-      profile,
-      error
-    };
-        
-  res.render("error", templateVars);
+  const profile = users[req.session.user_id];
+  const error = "404: Page Not Found";
+  const templateVars = {
+    user,
+    profile,
+    error
+  };
+      
+  res.status(404).render("error", templateVars);
 });
 
 // EDIT URL FROM SHORTURL PAGE
@@ -320,7 +320,7 @@ app.put("/urls/:shortURL", (req, res) => {
     error
   };
   
-  res.render("error", templateVars);
+  res.status(401).render("error", templateVars);
   return;
 });
 
@@ -332,6 +332,7 @@ app.delete("/urls/:shortURL", (req, res) => {
     res.redirect("/urls");
     return;
   }
+  
   const user = req.session.user_id;
   const profile = users[req.session.user_id];
   const error = "401: Unauthorized Client";
@@ -341,7 +342,7 @@ app.delete("/urls/:shortURL", (req, res) => {
     error
   };
   
-  res.render("error", templateVars);
+  res.status(401).render("error", templateVars);
   return;
 });
 
