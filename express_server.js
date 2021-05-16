@@ -262,35 +262,47 @@ app.get("/urls/new", (req, res) => {
 // SHOW SHORTURL EDIT PAGE
 app.get("/urls/:shortURL", (req, res) => {
   // Only show shortURL pages that exist, otherwise send 404
-  if (urlDatabase[req.params.shortURL]) {
-    const user = req.session.user_id;
-    const profile = users[req.session.user_id];
-    const visits = urlDatabase[req.params.shortURL]["visitNum"];
-    const userID = urlDatabase[req.params.shortURL]["userID"];
-
+  const user = req.session.user_id;
+  const profile = users[req.session.user_id];
+  const visits = urlDatabase[req.params.shortURL]["visitNum"];
+  const userID = urlDatabase[req.params.shortURL]["userID"];
+  
+  if (!urlDatabase[req.params.shortURL]) {
+    const error = "404: Page Not Found";
     const templateVars = {
       user,
       profile,
-      visits,
-      userID,
-      shortURL: req.params.shortURL,
-      longURL: urlDatabase[req.params.shortURL]["longURL"],
+      error
     };
-
-    res.render("urls_show", templateVars);
+        
+    res.status(404).render("error", templateVars);
     return;
   }
 
-  const user = req.session.user_id;
-  const profile = users[req.session.user_id];
-  const error = "404: Page Not Found";
+  if (user !== userID) {
+    const error = "401: Unauthorized";
+    const templateVars = {
+      user,
+      profile,
+      error
+    };
+        
+    res.status(401).render("error", templateVars);
+    return;
+  }
+
   const templateVars = {
     user,
     profile,
-    error
+    visits,
+    userID,
+    shortURL: req.params.shortURL,
+    longURL: urlDatabase[req.params.shortURL]["longURL"],
   };
-      
-  res.status(404).render("error", templateVars);
+
+  res.render("urls_show", templateVars);
+  return;
+
 });
 
 // EDIT URL FROM SHORTURL PAGE
@@ -313,7 +325,7 @@ app.put("/urls/:shortURL", (req, res) => {
   
   const user = req.session.user_id;
   const profile = users[req.session.user_id];
-  const error = "401: Unauthorized Client";
+  const error = "401: Unauthorized";
   const templateVars = {
     user,
     profile,

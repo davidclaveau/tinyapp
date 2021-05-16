@@ -18,24 +18,24 @@
       <p class="card-text">Number of Visits: <%= visits %></p>
     </div>
   </div>
-  <% if (!user) { %>
+  <!-- <% if (!user) { %> -->
     <!-- Prompt user to login if not already -->
-    <div class="card text-center">
+    <!-- <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
         <p class="card-text"><a href="/login">Login</a> or <a href="/registration">Register</a> to see your own shortened URLs!</p>
       </div>
-    </div>
-  <% } else if (user !== userID) { %>
+    </div> -->
+  <!-- <% } else if (user !== userID) { %> -->
     <!-- Prompt user to look at their own URLs -->
-    <div class="card text-center">
+    <!-- <div class="card text-center">
       <div class="card-header"></div>
       <div class="card-body">
         <a href="/urls"><button type="submit" class="btn btn-primary" style="margin: .3em">See your URLs</button></a>
         <a href="/urls/new"><button type="submit" class="btn btn-primary" style="margin: .3em">Create New URLs</button></a>
       </div>
-    </div>
-  <% } else { %>
+    </div> -->
+  <!-- <% } else { %> -->
     <!-- Edit option if they own the urls -->
     <div class="card text-center">
       <div class="card-header">
@@ -49,7 +49,7 @@
         </form>
       </div>
     </div> 
-  <% } %>
+  <!-- <% } %> -->
     
 
   <!-- Bootstrap JS -->
