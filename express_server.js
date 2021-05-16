@@ -109,15 +109,25 @@ app.post("/login", (req, res) => {
         res.status(401).render("error", templateVars);
         return;
       }
+
       if (result) {
         const userID = getUserByID(userEmail, users);
         req.session.user_id = userID;
         res.redirect("/urls");
         return;
       }
+    
+      // Ask user to try logging in again
+      const templateVars = {
+        attempt: "incorrect",
+        user: req.session.user_id
+      };
+      res.render("login", templateVars);
+      return;
     });
+
   } else {
-    // Otherwise, ask user to try logging in again
+    // Ask user to try logging in again
     const templateVars = {
       attempt: "incorrect",
       user: req.session.user_id
@@ -152,7 +162,7 @@ app.post("/registration", (req, res) => {
   const userPassword = req.body.password;
 
   // If email or password is empty, and email is already in use
-  if (userEmail === "" || userPassword === "" || getUserByEmail(userEmail, users)) {
+  if (getUserByEmail(userEmail, users)) {
     const user = req.session.user_id;
     const profile = users[req.session.user_id];
     const error = "409: Conflict - Username Already Exists!";
@@ -163,6 +173,20 @@ app.post("/registration", (req, res) => {
     };
     
     res.status(409).render("error", templateVars);
+    return;
+  }
+
+  if (userEmail === "" || userPassword === "") {
+    const user = req.session.user_id;
+    const profile = users[req.session.user_id];
+    const error = "422: Unprocessable Entity in Username or Password";
+    const templateVars = {
+      user,
+      profile,
+      error
+    };
+    
+    res.status(422).render("error", templateVars);
     return;
   }
 
@@ -226,7 +250,7 @@ app.get("/u/:shortURL", (req, res) => {
   }
 
   // Count number of visits
-  const longURL = shortURL["longURL"]
+  const longURL = shortURL["longURL"];
   longURL["visitNum"] += 1;
   res.redirect(longURL);
 
@@ -278,12 +302,10 @@ app.get("/urls/new", (req, res) => {
 
 // SHOW SHORTURL EDIT PAGE
 app.get("/urls/:shortURL", (req, res) => {
-  // Only show shortURL pages that exist, otherwise send 404
   const user = req.session.user_id;
   const profile = users[req.session.user_id];
-  const visits = urlDatabase[req.params.shortURL]["visitNum"];
-  const userID = urlDatabase[req.params.shortURL]["userID"];
   
+  // Does the shortURL exist
   if (!urlDatabase[req.params.shortURL]) {
     const error = "404: Page Not Found";
     const templateVars = {
@@ -296,6 +318,9 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
 
+  const userID = urlDatabase[req.params.shortURL]["userID"];
+
+  // Does user own the shortURL
   if (user !== userID) {
     const error = "401: Unauthorized";
     const templateVars = {
@@ -308,6 +333,7 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
 
+  const visits = urlDatabase[req.params.shortURL]["visitNum"];
   const templateVars = {
     user,
     profile,
@@ -318,8 +344,6 @@ app.get("/urls/:shortURL", (req, res) => {
   };
 
   res.render("urls_show", templateVars);
-  return;
-
 });
 
 // EDIT URL FROM SHORTURL PAGE
@@ -336,7 +360,7 @@ app.put("/urls/:shortURL", (req, res) => {
       visitNum: currentVisits
     };
 
-    res.redirect(`/urls/${shortURL}`);
+    res.redirect(`/urls`);
     return;
   }
   
