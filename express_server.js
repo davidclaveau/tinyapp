@@ -99,7 +99,7 @@ app.post("/login", (req, res) => {
       if (err) {
         const user = req.session.user_id;
         const profile = users[req.session.user_id];
-        const error = "401: Unauthorized Client";
+        const error = "401: Unauthorized";
         const templateVars = {
           user,
           profile,
@@ -170,7 +170,7 @@ app.post("/registration", (req, res) => {
     if (err) {
       const user = req.session.user_id;
       const profile = users[req.session.user_id];
-      const error = "401: Unauthorized Client";
+      const error = "401: Unauthorized";
       const templateVars = {
         user,
         profile,
@@ -184,7 +184,7 @@ app.post("/registration", (req, res) => {
       if (err) {
         const user = req.session.user_id;
         const profile = users[req.session.user_id];
-        const error = "401: Unauthorized Client";
+        const error = "401: Unauthorized";
         const templateVars = {
           user,
           profile,
@@ -209,10 +209,27 @@ app.post("/registration", (req, res) => {
 
 // REDIRECT SHORT URL TO LONGURL
 app.get("/u/:shortURL", (req, res) => {
+  const shortURL = urlDatabase[req.params.shortURL];
+ 
+  if (!shortURL) {
+    const user = req.session.user_id;
+    const profile = users[req.session.user_id];
+    const error = "404: Page Not Found";
+    const templateVars = {
+      user,
+      profile,
+      error
+    };
+
+    res.status(404).render("error", templateVars);
+    return;
+  }
+
   // Count number of visits
-  urlDatabase[req.params.shortURL]["visitNum"] += 1;
-  const longURL = urlDatabase[req.params.shortURL]["longURL"];
+  const longURL = shortURL["longURL"]
+  longURL["visitNum"] += 1;
   res.redirect(longURL);
+
 });
 
 // MY URLS PAGE
@@ -347,7 +364,7 @@ app.delete("/urls/:shortURL", (req, res) => {
   
   const user = req.session.user_id;
   const profile = users[req.session.user_id];
-  const error = "401: Unauthorized Client";
+  const error = "401: Unauthorized";
   const templateVars = {
     user,
     profile,

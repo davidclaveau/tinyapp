@@ -18,40 +18,19 @@
       <p class="card-text">Number of Visits: <%= visits %></p>
     </div>
   </div>
-  <!-- <% if (!user) { %> -->
-    <!-- Prompt user to login if not already -->
-    <!-- <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <p class="card-text"><a href="/login">Login</a> or <a href="/registration">Register</a> to see your own shortened URLs!</p>
-      </div>
-    </div> -->
-  <!-- <% } else if (user !== userID) { %> -->
-    <!-- Prompt user to look at their own URLs -->
-    <!-- <div class="card text-center">
-      <div class="card-header"></div>
-      <div class="card-body">
-        <a href="/urls"><button type="submit" class="btn btn-primary" style="margin: .3em">See your URLs</button></a>
-        <a href="/urls/new"><button type="submit" class="btn btn-primary" style="margin: .3em">Create New URLs</button></a>
-      </div>
-    </div> -->
-  <!-- <% } else { %> -->
-    <!-- Edit option if they own the urls -->
-    <div class="card text-center">
-      <div class="card-header">
-        <h2>Edit</h2>
-        <form action="/urls/<%= shortURL %>?_method=PUT" method="POST">
-          <div>
-            <label for="longURL">New URL:</label>
-            <input type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
-            <button type="submit" class="btn btn-primary">Submit</button>
-          </div>
-        </form>
-      </div>
-    </div> 
-  <!-- <% } %> -->
+  <div class="card text-center">
+    <div class="card-header">
+      <h2>Edit</h2>
+      <form action="/urls/<%= shortURL %>?_method=PUT" method="POST">
+        <div>
+          <label for="longURL">New URL:</label>
+          <input type="text" name="longURL" placeholder="http://" style="width: 300px; margin: 1em">
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
     
-
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
